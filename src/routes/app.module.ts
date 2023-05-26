@@ -17,11 +17,11 @@ import { UsersEntity } from './users/users.entity'
 			password: process.env.DB_PASSWORD,
 			database: process.env.DB_NAME,
 			entities: [UsersEntity],
-			synchronize: process.env.NODE_ENV === 'development' ? true : false
+			synchronize: process.env.NODE_ENV === 'development' ? true : false,
 		}),
-		UsersModule
+		UsersModule,
 	],
 	controllers: [AppController],
-	providers: [AppService]
+	providers: [AppService],
 })
 export class AppModule {}
