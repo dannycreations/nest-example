@@ -1,0 +1,44 @@
+services:
+    app:
+        build:
+            context: .
+            target: dev
+        restart: always
+        environment:
+            - DB_HOST=mysql
+            - DB_PORT=3306
+            - DB_USER=root
+            - DB_PASSWORD=123123
+            - DB_NAME=local-test
+            - TSC_WATCHFILE=PriorityPollingInterval
+        ports:
+            - 3000:3000
+        depends_on:
+            mysql:
+                condition: service_healthy
+        volumes:
+            - .:/app
+            - /app/node_modules
+        networks:
+            - local
+
+    mysql:
+        image: mysql:8
+        restart: always
+        healthcheck:
+            test: mysqladmin ping -h 127.0.0.1
+        environment:
+            - MYSQL_ROOT_PASSWORD=123123
+            - MYSQL_DATABASE=local-test
+        ports:
+            - 3306:3306
+        volumes:
+            - mysql:/var/lib/mysql
+        networks:
+            - local
+
+volumes:
+    mysql:
+
+networks:
+    local:
