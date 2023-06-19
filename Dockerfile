@@ -1,39 +1,44 @@
-## Stage 1 (base)
+# Base
 FROM node:16-alpine AS base
 
-ENV NODE_ENV=production
+ENV NODE_ENV=development
 
 RUN apk add --no-cache tini
 ENTRYPOINT ["/sbin/tini", "--"]
 
+RUN apk add --no-cache tzdata
+ENV TZ=Asia/Jakarta
+
 RUN mkdir /app && chown -R node:node /app
 WORKDIR /app
 
-RUN npm i npm@latest -g
+RUN npm install -g pnpm@latest \
+    npm cache clean --force
 
 USER node
 
-COPY --chown=node:node package*.json ./
+COPY --chown=node:node pnpm-lock.yaml ./
+RUN pnpm fetch
 
-RUN npm ci \
-  && npm cache clean -f
+COPY --chown=node:node package.json ./
+RUN pnpm install -r --offline
 
-## Stage 2 (development)
-FROM base AS dev
+# Development
+FROM base AS development
 
-ENV NODE_ENV=development
+COPY --chown=node:node tsconfig*.json ./
+COPY --chown=node:node nest-cli.json ./
+COPY --chown=node:node src ./src
 
-WORKDIR /app
+RUN pnpm run build
 
-RUN npm install
+# Production
+FROM base AS production
 
-CMD npm run start:dev
+ENV NODE_ENV=production
 
-## Stage 3 (production)
-FROM base AS prod
+COPY --chown=node:node --from=development /app/dist ./dist
 
-WORKDIR /app
+RUN pnpm prune --prod
 
-COPY --chown=node:node dist ./dist
-
-CMD node dist/main
+CMD ["node", "dist/main"]
