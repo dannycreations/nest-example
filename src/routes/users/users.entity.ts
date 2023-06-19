@@ -1,8 +1,8 @@
-import { Entity, Index, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm'
+import { Exclude } from 'class-transformer'
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm'
 
 @Entity('users')
 export class UsersEntity {
-	@Index()
 	@PrimaryGeneratedColumn()
 	id: number
 
@@ -10,11 +10,12 @@ export class UsersEntity {
 	email: string
 
 	@Column()
+	@Exclude()
 	password: string
 
-	@CreateDateColumn()
-	created_at: Date
+	@CreateDateColumn({ name: 'created_at' })
+	createdAt: Date
 
-	@UpdateDateColumn()
-	updated_at: Date
+	@UpdateDateColumn({ name: 'updated_at' })
+	updatedAt: Date
 }
